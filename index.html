@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Xarajatlar Hisoblagichi | Expense Tracker</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Maxsus Neo-brutalism & Mobile CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="p-3 sm:p-5 antialiased pb-28">
+
+  <!-- ===================================================================
+       ASOSIY MOBIL ILOVA KONTEYNERI (Mobile App Shell)
+       =================================================================== -->
+  <div class="max-w-xl mx-auto space-y-4">
+
+    <!-- ===================================================================
+         YUQORI APP BAR (Header)
+         =================================================================== -->
+    <header class="neo-box p-3.5 sm:p-4 bg-white flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 bg-[#FFE600] border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center text-xl font-black rounded">
+          💰
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-black tracking-tight text-black leading-tight">
+            Xisob-Kitob
+          </h1>
+          <p class="text-[11px] font-bold text-gray-600">
+            Xarajatlar hisoblagichi
+          </p>
+        </div>
+      </div>
+
+      <!-- Yuqori boshqaruv tugmalari -->
+      <div class="flex items-center gap-1.5">
+        <button id="btnSetBudgetModal" class="neo-btn bg-[#C084FC] text-black px-2.5 py-1.5 text-xs rounded flex items-center gap-1" title="Oylik limitni belgilash">
+          <i class="fa-solid fa-bullseye"></i>
+          <span class="hidden sm:inline">Limit</span>
+        </button>
+
+        <button id="btnClearAll" class="neo-btn bg-[#FB7185] text-black px-2.5 py-1.5 text-xs rounded flex items-center gap-1" title="Barcha xarajatlarni tozalash">
+          <i class="fa-solid fa-trash-can"></i>
+          <span class="hidden sm:inline">Tozalash</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===================================================================
+         TAB 1: ASOSIY (DASHBOARD)
+         =================================================================== -->
+    <main id="tabDashboard" class="tab-view space-y-4">
+
+      <!-- Jami Xarajat Karta -->
+      <div class="neo-box p-4 sm:p-5 bg-[#FFE600] flex flex-col justify-between relative overflow-hidden">
+        <div>
+          <div class="flex items-center justify-between text-black mb-1">
+            <span class="text-[11px] font-black uppercase tracking-wider bg-white px-2 py-0.5 border border-black shadow-[2px_2px_0px_#000] rounded">
+              Jami Xarajat
+            </span>
+            <span id="transactionCountDisplay" class="bg-black text-white text-xs px-2 py-0.5 rounded font-black">
+              0 ta
+            </span>
+          </div>
+          <h2 id="totalExpenseDisplay" class="text-3xl sm:text-4xl font-black text-black tracking-tight my-2">
+            0 UZS
+          </h2>
+        </div>
+        <div class="text-xs font-bold text-gray-900 flex items-center justify-between pt-2 border-t-2 border-black/20">
+          <span>Holat:</span>
+          <span class="font-extrabold text-black flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span> Faol
+          </span>
+        </div>
+      </div>
+
+      <!-- Oylik Byudjet & Progress Bar Karta -->
+      <div class="neo-box p-4 sm:p-5 bg-white space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[11px] font-black uppercase tracking-wider bg-[#E0E7FF] px-2 py-0.5 border border-black shadow-[2px_2px_0px_#000] rounded">
+              Oylik Byudjet
+            </span>
+            <span id="budgetMonthLabel" class="text-[11px] font-bold text-gray-500">Joriy oy</span>
+          </div>
+          <button id="btnQuickEditBudget" class="text-xs font-bold text-blue-700 underline flex items-center gap-1 cursor-pointer">
+            <i class="fa-solid fa-pen-to-square"></i> O'zgartirish
+          </button>
+        </div>
+
+        <!-- Byudjet raqamlari -->
+        <div class="flex items-baseline justify-between gap-2 pt-1">
+          <div>
+            <span class="text-[11px] font-bold text-gray-500">Ishlatildi: </span>
+            <span id="budgetSpentDisplay" class="text-lg sm:text-xl font-black text-black">0 UZS</span>
+          </div>
+          <div id="budgetRemainingWrapper" class="text-right">
+            <span class="text-[11px] font-bold text-gray-500">Limit: </span>
+            <span id="budgetLimitDisplay" class="text-xs sm:text-sm font-bold text-gray-700">0 UZS</span>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full h-5 bg-gray-100 border-2 border-black shadow-[2px_2px_0px_#000] rounded-sm overflow-hidden p-0.5 relative">
+          <div id="budgetProgressBar" class="h-full bg-emerald-500 transition-all duration-500 progress-stripes rounded-xs" style="width: 0%;"></div>
+          <span id="budgetPercentText" class="absolute inset-0 flex items-center justify-center text-[11px] font-black text-black drop-shadow-sm">
+            0%
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between text-xs font-bold pt-1">
+          <span class="text-gray-500">Qolgan mablag':</span>
+          <span id="budgetRemainingDisplay" class="text-sm font-black text-emerald-700">0 UZS</span>
+        </div>
+
+        <!-- Ogohlantirish banneri -->
+        <div id="budgetAlertBanner" class="hidden mt-2 p-2 border-2 border-black rounded text-xs font-extrabold flex items-center gap-2">
+          <i id="budgetAlertIcon" class="fa-solid fa-triangle-exclamation"></i>
+          <span id="budgetAlertText">Limit nazoratda!</span>
+        </div>
+      </div>
+
+      <!-- Tezkor 4 ta Statistika -->
+      <section class="grid grid-cols-2 gap-3">
+        <div class="neo-box-sm p-3 bg-[#E9D5FF] flex flex-col justify-center">
+          <span class="text-[10px] font-bold text-purple-900 uppercase">Bugungi xarajat</span>
+          <span id="todayExpenseDisplay" class="text-base sm:text-lg font-black text-black mt-0.5">0 UZS</span>
+        </div>
+        <div class="neo-box-sm p-3 bg-[#BAE6FD] flex flex-col justify-center">
+          <span class="text-[10px] font-bold text-sky-900 uppercase">Bu haftalik</span>
+          <span id="weekExpenseDisplay" class="text-base sm:text-lg font-black text-black mt-0.5">0 UZS</span>
+        </div>
+        <div class="neo-box-sm p-3 bg-[#BBF7D0] flex flex-col justify-center">
+          <span class="text-[10px] font-bold text-emerald-900 uppercase">Shu oylik</span>
+          <span id="monthExpenseDisplay" class="text-base sm:text-lg font-black text-black mt-0.5">0 UZS</span>
+        </div>
+        <div class="neo-box-sm p-3 bg-[#FED7AA] flex flex-col justify-center">
+          <span class="text-[10px] font-bold text-amber-900 uppercase">Kategoriyalar</span>
+          <span id="categoryCountDisplay" class="text-base sm:text-lg font-black text-black mt-0.5">7 ta</span>
+        </div>
+      </section>
+
+      <!-- Dashboard ichidagi so'nggi xarajatlar tezkor bloki -->
+      <div class="neo-box p-4 bg-white space-y-3">
+        <div class="flex items-center justify-between border-b-2 border-black pb-2">
+          <h3 class="text-sm font-black flex items-center gap-1.5">
+            <span>⚡</span> So'nggi Xarajatlar
+          </h3>
+          <button id="btnViewAllHistoryFromDashboard" class="text-xs font-black text-blue-600 hover:text-blue-800 underline flex items-center gap-1">
+            Barchasi ➔
+          </button>
+        </div>
+        <div id="recentExpenseMiniList" class="space-y-2">
+          <!-- JS orqali to'ldiriladi -->
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ===================================================================
+         TAB 2: YANGI XARAJAT QO'SHISH (FORM TAB)
+         =================================================================== -->
+    <main id="tabAdd" class="tab-view hidden space-y-4">
+      <div class="neo-box p-4 sm:p-5 bg-white">
+        <div class="flex items-center justify-between border-b-2 border-black pb-3 mb-4">
+          <h2 class="text-lg font-black flex items-center gap-2">
+            <span class="bg-[#FFE600] w-7 h-7 rounded border border-black flex items-center justify-center text-sm">➕</span>
+            Yangi Xarajat Qo'shish
+          </h2>
+          <span class="text-xs font-bold text-gray-500">Forma</span>
+        </div>
+
+        <form id="expenseForm" class="space-y-4">
+          <!-- Summa -->
+          <div>
+            <label for="expenseAmount" class="block text-xs font-black uppercase tracking-wider mb-1 text-black">
+              Summa (so'm) <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input 
+                type="number" 
+                id="expenseAmount" 
+                placeholder="Masalan: 45000" 
+                min="1" 
+                step="any"
+                required 
+                class="neo-input w-full px-3 py-2.5 pl-3 pr-16 text-lg font-black text-black placeholder:font-normal placeholder:text-gray-400"
+              >
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-xs font-black text-gray-600">
+                UZS
+              </div>
+            </div>
+            <div id="formattedAmountPreview" class="text-xs font-bold text-gray-500 mt-1 min-h-[16px]"></div>
+          </div>
+
+          <!-- Kategoriya tanlash -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="expenseCategory" class="text-xs font-black uppercase tracking-wider text-black">
+                Kategoriya <span class="text-red-500">*</span>
+              </label>
+              <button 
+                type="button" 
+                id="btnOpenAddCategoryModal" 
+                class="text-xs font-bold text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
+              >
+                <i class="fa-solid fa-plus-circle"></i> Yangi kategoriya
+              </button>
+            </div>
+            <select id="expenseCategory" required class="neo-input w-full px-3 py-2.5 text-sm font-bold bg-white cursor-pointer">
+              <!-- JS to'ldiradi -->
+            </select>
+          </div>
+
+          <!-- Sana -->
+          <div>
+            <label for="expenseDate" class="block text-xs font-black uppercase tracking-wider mb-1 text-black">
+              Sana <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="date" 
+              id="expenseDate" 
+              required 
+              class="neo-input w-full px-3 py-2 text-sm font-bold text-black"
+            >
+          </div>
+
+          <!-- Qisqa izoh / nomi -->
+          <div>
+            <label for="expenseTitle" class="block text-xs font-black uppercase tracking-wider mb-1 text-black">
+              Qisqa Izoh / Nomi <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="expenseTitle" 
+              placeholder="Masalan: Tushlik, Bozorlik, Yandex Taxi" 
+              maxlength="80" 
+              required 
+              class="neo-input w-full px-3 py-2.5 text-sm font-bold placeholder:font-normal placeholder:text-gray-400"
+            >
+          </div>
+
+          <!-- Saqlash Tugmasi -->
+          <button 
+            type="submit" 
+            class="neo-btn neo-btn-primary w-full py-3 text-base flex items-center justify-center gap-2 mt-4"
+          >
+            <i class="fa-solid fa-bolt"></i>
+            <span>Xarajatni Saqlash</span>
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- ===================================================================
+         TAB 3: XARAJATLAR TARIXI (HISTORY TAB)
+         =================================================================== -->
+    <main id="tabHistory" class="tab-view hidden space-y-4">
+      <div class="neo-box p-4 sm:p-5 bg-white min-h-[480px] flex flex-col">
+        
+        <!-- Sarlavha va Qidiruv / Filtr qismi -->
+        <div class="border-b-2 border-black pb-3 mb-3 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-base sm:text-lg font-black flex items-center gap-1.5">
+              <span class="bg-[#34D399] w-6 h-6 rounded border border-black flex items-center justify-center text-xs">📜</span>
+              Xarajatlar Tarixi
+            </h2>
+            <span id="filteredCountBadge" class="text-xs font-black bg-gray-200 border border-black px-2 py-0.5 rounded shadow-[1px_1px_0px_#000]">
+              0 ta
+            </span>
+          </div>
+
+          <!-- Qidiruv maydoni -->
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input 
+              type="text" 
+              id="searchInput" 
+              placeholder="Xarajat nomi bo'yicha qidirish..." 
+              class="neo-input w-full pl-8 pr-8 py-2 text-xs sm:text-sm font-semibold placeholder:font-normal placeholder:text-gray-400"
+            >
+            <button id="btnClearSearch" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black text-xs">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Filtrlar qatori -->
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
+            <div>
+              <label class="block text-[10px] font-black uppercase text-gray-600 mb-0.5">Kategoriya:</label>
+              <select id="filterCategory" class="neo-input w-full px-2 py-1.5 text-xs font-bold bg-white cursor-pointer">
+                <option value="all">Barchasi</option>
+                <!-- JS orqali to'ldiriladi -->
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-black uppercase text-gray-600 mb-0.5">Davr:</label>
+              <select id="filterPeriod" class="neo-input w-full px-2 py-1.5 text-xs font-bold bg-white cursor-pointer">
+                <option value="all">Barchasi</option>
+                <option value="today">Bugun</option>
+                <option value="week">Bu hafta</option>
+                <option value="month" selected>Shu oy</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Xarajatlar ro'yxati -->
+        <div id="expenseList" class="space-y-2.5 flex-1 overflow-y-auto max-h-[460px] pr-0.5">
+          <!-- JS orqali to'ldiriladi -->
+        </div>
+
+        <!-- Bo'sh holat (Empty State) -->
+        <div id="emptyListState" class="hidden flex flex-col items-center justify-center py-12 text-center flex-1">
+          <div class="w-14 h-14 rounded-full bg-[#FFE600] border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center text-2xl mb-2">
+            🧾
+          </div>
+          <h3 class="text-sm font-black text-black">Hech narsa topilmadi</h3>
+          <p class="text-xs font-semibold text-gray-500 max-w-xs mt-1">
+            Kiritilgan mezonlarga mos xarajatlar yo'q yoki hali kiritilmagan.
+          </p>
+        </div>
+
+        <!-- Ro'yxat ostidagi umumiy jami sarflangan summa -->
+        <div id="listFooterSummary" class="mt-3 pt-2.5 border-t-2 border-black flex items-center justify-between text-xs sm:text-sm font-black bg-gray-50 p-2.5 border border-black shadow-[2px_2px_0px_#000]">
+          <span>Filtr jami:</span>
+          <span id="filteredTotalDisplay" class="text-red-600 text-sm sm:text-base">0 UZS</span>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ===================================================================
+         TAB 4: TAHLIL VA DIAGRAMMA (ANALYTICS TAB)
+         =================================================================== -->
+    <main id="tabAnalytics" class="tab-view hidden space-y-4">
+      <div class="neo-box p-4 sm:p-5 bg-white">
+        <div class="flex items-center justify-between border-b-2 border-black pb-3 mb-4">
+          <h2 class="text-base sm:text-lg font-black flex items-center gap-1.5">
+            <span class="bg-[#C084FC] w-6 h-6 rounded border border-black flex items-center justify-center text-xs">📊</span>
+            Kategoriyalar Tahlili
+          </h2>
+          <span class="text-xs font-bold text-gray-500">Diagramma</span>
+        </div>
+
+        <!-- Diagramma bo'sh bo'lganda ko'rinish -->
+        <div id="chartEmptyState" class="hidden flex flex-col items-center justify-center py-12 text-center">
+          <div class="w-14 h-14 rounded-full bg-gray-100 border-2 border-black flex items-center justify-center text-2xl mb-2">
+            📉
+          </div>
+          <p class="font-black text-gray-800 text-sm">Hozircha xarajatlar mavjud emas</p>
+          <p class="text-xs text-gray-500 max-w-xs mt-1">Xarajat kiritganingizda ushbu bo'limda rangli tahlil ko'rinadi.</p>
+        </div>
+
+        <!-- Chart.js Canvas -->
+        <div id="chartContainer" class="relative max-w-[260px] sm:max-w-[300px] mx-auto my-3">
+          <canvas id="categoryChart"></canvas>
+        </div>
+
+        <!-- Kategoriya taqsimoti ro'yxati -->
+        <div id="categoryBreakdownList" class="mt-4 pt-3 border-t-2 border-black/10 space-y-2 max-h-64 overflow-y-auto pr-1">
+          <!-- JS orqali to'ldiriladi -->
+        </div>
+      </div>
+    </main>
+
+    <!-- ===================================================================
+         TAB 5: LIMIT VA BYUDJET SAHIFASI (BUDGET TAB)
+         =================================================================== -->
+    <main id="tabBudget" class="tab-view hidden space-y-4">
+      
+      <!-- Byudjet Umumiy Holat Kartasi -->
+      <div class="neo-box p-4 sm:p-5 bg-white space-y-4">
+        <div class="flex items-center justify-between border-b-2 border-black pb-3">
+          <h2 class="text-base sm:text-lg font-black flex items-center gap-1.5">
+            <span class="bg-[#C084FC] w-7 h-7 rounded border border-black flex items-center justify-center text-sm">🎯</span>
+            Oylik Byudjet & Limit
+          </h2>
+          <span id="pageBudgetMonthBadge" class="text-xs font-black bg-purple-100 border border-black px-2 py-0.5 rounded shadow-[1px_1px_0px_#000]">
+            Joriy oy
+          </span>
+        </div>
+
+        <!-- 3 ta asosiy raqamlar -->
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="p-2 rounded border-2 border-black bg-purple-50 shadow-[2px_2px_0px_#000]">
+            <span class="text-[10px] font-bold text-gray-500 uppercase block">Oylik Limit</span>
+            <span id="pageBudgetLimitDisplay" class="text-xs sm:text-sm font-black text-black">0 UZS</span>
+          </div>
+          <div class="p-2 rounded border-2 border-black bg-amber-50 shadow-[2px_2px_0px_#000]">
+            <span class="text-[10px] font-bold text-gray-500 uppercase block">Ishlatildi</span>
+            <span id="pageBudgetSpentDisplay" class="text-xs sm:text-sm font-black text-black">0 UZS</span>
+          </div>
+          <div class="p-2 rounded border-2 border-black bg-emerald-50 shadow-[2px_2px_0px_#000]">
+            <span class="text-[10px] font-bold text-gray-500 uppercase block">Qoldi</span>
+            <span id="pageBudgetRemainingDisplay" class="text-xs sm:text-sm font-black text-emerald-700">0 UZS</span>
+          </div>
+        </div>
+
+        <!-- Katta Progress Bar -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-black">
+            <span>Byudjet sarflanishi:</span>
+            <span id="pageBudgetPercentText">0%</span>
+          </div>
+          <div class="w-full h-6 bg-gray-100 border-2 border-black shadow-[2px_2px_0px_#000] rounded-sm overflow-hidden p-0.5 relative">
+            <div id="pageBudgetProgressBar" class="h-full bg-emerald-500 transition-all duration-500 progress-stripes rounded-xs" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Holat Banneri -->
+        <div id="pageBudgetAlertBanner" class="p-3 border-2 border-black rounded text-xs font-black flex items-center gap-2 bg-emerald-100 text-emerald-900 shadow-[2px_2px_0px_#000]">
+          <i id="pageBudgetAlertIcon" class="fa-solid fa-circle-check text-emerald-700 text-base"></i>
+          <span id="pageBudgetAlertText">Byudjet xavfsiz holatda! Rejadan chiqilmadi.</span>
+        </div>
+      </div>
+
+      <!-- Aqlli Moliya Statistikasi (Kunlik tavsiya) -->
+      <div class="neo-box-sm p-4 bg-[#FEF08A] flex items-center justify-between gap-3">
+        <div>
+          <span class="text-[10px] font-black uppercase text-amber-900 block">Tavsiya etilgan kunlik sarf:</span>
+          <span id="pageDailyBudgetDisplay" class="text-lg sm:text-xl font-black text-black">0 UZS / kun</span>
+          <p id="pageDaysRemainingText" class="text-[11px] font-bold text-gray-700 mt-0.5">
+            Oy yakunigacha qolgan kunlar: 0 kun
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-white rounded-full border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center text-xl flex-shrink-0">
+          💡
+        </div>
+      </div>
+
+      <!-- Limitni O'zgartirish Formasi -->
+      <div class="neo-box p-4 sm:p-5 bg-white space-y-4">
+        <div class="border-b-2 border-black pb-2">
+          <h3 class="text-sm sm:text-base font-black flex items-center gap-1.5">
+            <span>⚙️</span> Limitni Yangilash
+          </h3>
+          <p class="text-xs font-semibold text-gray-500">
+            Yangi oylik byudjet miqdorini belgilang
+          </p>
+        </div>
+
+        <form id="pageBudgetForm" class="space-y-3.5">
+          <div>
+            <label for="pageMonthlyBudgetInput" class="block text-xs font-black uppercase tracking-wider mb-1 text-black">
+              Yangi Limit Summasi (so'm) <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input 
+                type="number" 
+                id="pageMonthlyBudgetInput" 
+                min="0" 
+                step="10000" 
+                required 
+                placeholder="Masalan: 3000000" 
+                class="neo-input w-full px-3 py-2.5 pl-3 pr-16 text-lg font-black text-black"
+              >
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-xs font-black text-gray-600">
+                UZS
+              </div>
+            </div>
+            <div id="pageBudgetFormatPreview" class="text-xs font-bold text-gray-500 mt-1 min-h-[16px]"></div>
+          </div>
+
+          <!-- Tezkor tayyor summalar (Presets) -->
+          <div>
+            <span class="text-[11px] font-black uppercase text-gray-600 block mb-1.5">Tezkor tanlov:</span>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" class="btn-budget-preset neo-btn bg-gray-100 hover:bg-yellow-200 px-2.5 py-1 text-xs font-bold rounded" data-amount="1000000">1 mln</button>
+              <button type="button" class="btn-budget-preset neo-btn bg-gray-100 hover:bg-yellow-200 px-2.5 py-1 text-xs font-bold rounded" data-amount="2000000">2 mln</button>
+              <button type="button" class="btn-budget-preset neo-btn bg-gray-100 hover:bg-yellow-200 px-2.5 py-1 text-xs font-bold rounded" data-amount="3000000">3 mln</button>
+              <button type="button" class="btn-budget-preset neo-btn bg-gray-100 hover:bg-yellow-200 px-2.5 py-1 text-xs font-bold rounded" data-amount="5000000">5 mln</button>
+              <button type="button" class="btn-budget-preset neo-btn bg-gray-100 hover:bg-yellow-200 px-2.5 py-1 text-xs font-bold rounded" data-amount="10000000">10 mln</button>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            class="neo-btn bg-[#C084FC] hover:bg-purple-400 text-black w-full py-3 text-base flex items-center justify-center gap-2 font-black mt-2"
+          >
+            <i class="fa-solid fa-check"></i>
+            <span>Limitni Saqlash</span>
+          </button>
+        </form>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ===================================================================
+       FIXED BOTTOM NAVIGATION BAR (MOBIL ILOVA NAVBARI)
+       =================================================================== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-[3px] border-black shadow-[0px_-3px_0px_#000] bottom-nav-bar">
+    <div class="max-w-xl mx-auto px-2 sm:px-4 py-1.5 flex items-center justify-around relative">
+      <!-- 1. Asosiy Tab -->
+      <button class="nav-tab-btn active flex-1" data-tab="tabDashboard">
+        <i class="fa-solid fa-house text-base sm:text-lg mb-0.5"></i>
+        <span>Asosiy</span>
+      </button>
+
+      <!-- 2. Tarix Tab -->
+      <button class="nav-tab-btn flex-1" data-tab="tabHistory">
+        <i class="fa-solid fa-clock-rotate-left text-base sm:text-lg mb-0.5"></i>
+        <span>Tarix</span>
+      </button>
+
+      <!-- 3. Markazdagi Floating FAB Tugma (Qo'shish) -->
+      <div class="flex-1 flex justify-center">
+        <button class="nav-fab-btn" data-tab="tabAdd" title="Yangi xarajat qo'shish">
+          <i class="fa-solid fa-plus font-black"></i>
+        </button>
+      </div>
+
+      <!-- 4. Tahlil Tab -->
+      <button class="nav-tab-btn flex-1" data-tab="tabAnalytics">
+        <i class="fa-solid fa-chart-pie text-base sm:text-lg mb-0.5"></i>
+        <span>Tahlil</span>
+      </button>
+
+      <!-- 5. Oylik Limit Tab -->
+      <button class="nav-tab-btn flex-1" data-tab="tabBudget" title="Limit va Byudjet">
+        <i class="fa-solid fa-bullseye text-base sm:text-lg mb-0.5"></i>
+        <span>Limit</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===================================================================
+       MODAL 1: YANGI KATEGORIYA QO'SHISH
+       =================================================================== -->
+  <div id="categoryModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+    <div class="neo-box modal-content bg-white w-full max-w-sm sm:max-w-md p-5 sm:p-6 relative">
+      <button id="btnCloseCategoryModal" class="absolute top-4 right-4 w-8 h-8 rounded border-2 border-black flex items-center justify-center font-bold hover:bg-gray-100 cursor-pointer">
+        ✕
+      </button>
+
+      <h3 class="text-lg sm:text-xl font-black mb-1 flex items-center gap-2">
+        <span>✨</span> Yangi Kategoriya
+      </h3>
+      <p class="text-xs font-semibold text-gray-600 mb-3">
+        Shaxsiy xarajat toifangizni yarating
+      </p>
+
+      <form id="categoryForm" class="space-y-3.5">
+        <div>
+          <label for="newCategoryName" class="block text-xs font-black uppercase mb-1">
+            Kategoriya Nomi <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="newCategoryName" 
+            required 
+            placeholder="Masalan: Kofe, Go'zallik..." 
+            class="neo-input w-full px-3 py-2 text-sm font-bold"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-black uppercase mb-1">
+            Emoji / Ikonka <span class="text-red-500">*</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input 
+              type="text" 
+              id="newCategoryIcon" 
+              required 
+              readonly 
+              value="☕" 
+              class="neo-input w-12 h-11 text-center text-xl font-black cursor-pointer bg-yellow-50 flex-shrink-0"
+            >
+            <!-- Tezkor emojilar tanlovi -->
+            <div class="flex flex-wrap gap-1.5 flex-1 max-h-20 overflow-y-auto p-1 bg-gray-50 border-2 border-black">
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="☕">☕</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="🛒">🛒</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="✈️">✈️</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="🚗">🚗</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="🎁">🎁</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="⚽">⚽</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="👕">👕</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="💻">💻</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="🍕">🍕</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="🎬">🎬</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="📱">📱</button>
+              <button type="button" class="emoji-opt text-base p-0.5 hover:scale-125 transition-transform" data-emoji="💡">💡</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black uppercase mb-1">
+            Rang Tanlash <span class="text-red-500">*</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <div class="flex gap-1.5 flex-wrap">
+              <button type="button" class="color-opt w-6 h-6 rounded border-2 border-black" style="background-color: #FFE600;" data-color="#FFE600"></button>
+              <button type="button" class="color-opt w-6 h-6 rounded border-2 border-black" style="background-color: #34D399;" data-color="#34D399"></button>
+              <button type="button" class="color-opt w-6 h-6 rounded border-2 border-black" style="background-color: #60A5FA;" data-color="#60A5FA"></button>
+              <button type="button" class="color-opt w-6 h-6 rounded border-2 border-black" style="background-color: #C084FC;" data-color="#C084FC"></button>
+              <button type="button" class="color-opt w-6 h-6 rounded border-2 border-black" style="background-color: #FB7185;" data-color="#FB7185"></button>
+              <button type="button" class="color-opt w-6 h-6 rounded border-2 border-black" style="background-color: #FB923C;" data-color="#FB923C"></button>
+            </div>
+            <input type="hidden" id="newCategoryColor" value="#FFE600">
+            <div id="colorPreviewBox" class="w-7 h-7 rounded border-2 border-black shadow-[2px_2px_0px_#000] ml-auto" style="background-color: #FFE600;"></div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t-2 border-black">
+          <button type="button" id="btnCancelCategoryModal" class="neo-btn bg-gray-200 px-3 py-1.5 text-xs font-bold rounded">
+            Bekor qilish
+          </button>
+          <button type="submit" class="neo-btn neo-btn-primary px-4 py-1.5 text-xs font-black rounded">
+            Saqlash
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 2: XARAJATNI TAHRIRLASH (EDIT MODAL)
+       =================================================================== -->
+  <div id="editExpenseModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+    <div class="neo-box modal-content bg-white w-full max-w-sm sm:max-w-md p-5 sm:p-6 relative">
+      <button id="btnCloseEditModal" class="absolute top-4 right-4 w-8 h-8 rounded border-2 border-black flex items-center justify-center font-bold hover:bg-gray-100 cursor-pointer">
+        ✕
+      </button>
+
+      <h3 class="text-lg sm:text-xl font-black mb-1 flex items-center gap-2">
+        <span>✏️</span> Xarajatni Tahrirlash
+      </h3>
+      <p class="text-xs font-semibold text-gray-600 mb-3">
+        Tanlangan xarajat ma'lumotlarini yangilang
+      </p>
+
+      <form id="editExpenseForm" class="space-y-3.5">
+        <input type="hidden" id="editExpenseId">
+
+        <div>
+          <label for="editExpenseAmount" class="block text-xs font-black uppercase mb-1">Summa (so'm)</label>
+          <input type="number" id="editExpenseAmount" min="1" step="any" required class="neo-input w-full px-3 py-2 text-base font-black">
+        </div>
+
+        <div>
+          <label for="editExpenseCategory" class="block text-xs font-black uppercase mb-1">Kategoriya</label>
+          <select id="editExpenseCategory" required class="neo-input w-full px-3 py-2 text-xs sm:text-sm font-bold bg-white">
+            <!-- JS to'ldiradi -->
+          </select>
+        </div>
+
+        <div>
+          <label for="editExpenseDate" class="block text-xs font-black uppercase mb-1">Sana</label>
+          <input type="date" id="editExpenseDate" required class="neo-input w-full px-3 py-2 text-xs sm:text-sm font-bold">
+        </div>
+
+        <div>
+          <label for="editExpenseTitle" class="block text-xs font-black uppercase mb-1">Qisqa Izoh / Nomi</label>
+          <input type="text" id="editExpenseTitle" maxlength="80" required class="neo-input w-full px-3 py-2 text-xs sm:text-sm font-bold">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t-2 border-black">
+          <button type="button" id="btnCancelEditModal" class="neo-btn bg-gray-200 px-3.5 py-1.5 text-xs font-bold rounded">
+            Bekor qilish
+          </button>
+          <button type="submit" class="neo-btn neo-btn-primary px-4 py-1.5 text-xs font-black rounded">
+            Saqlash
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+
+  <!-- ===================================================================
+       MODAL 4: O'CHIRISHNI TASDIQLASH (NEO-BRUTALISM POPUP)
+       =================================================================== -->
+  <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+    <div class="neo-box modal-content bg-white w-full max-w-sm p-5 relative">
+      <button id="btnCloseDeleteModal" class="absolute top-4 right-4 w-8 h-8 rounded border-2 border-black flex items-center justify-center font-bold hover:bg-gray-100 cursor-pointer">
+        ✕
+      </button>
+
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-11 h-11 rounded bg-[#FB7185] border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center text-xl flex-shrink-0">
+          🗑️
+        </div>
+        <div>
+          <h3 id="deleteModalTitle" class="text-base font-black text-black">
+            O'chirishni tasdiqlang
+          </h3>
+          <span class="text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded border border-red-300">
+            Qaytarib bo'lmaydi!
+          </span>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 border-2 border-black p-2.5 rounded mb-4 shadow-[2px_2px_0px_#000]">
+        <p id="deleteModalMessage" class="text-xs font-bold text-gray-800 break-words">
+          Haqiqatan ham ushbu xarajatni o'chirmoqchimisiz?
+        </p>
+      </div>
+
+      <input type="hidden" id="deleteTargetId" value="">
+      <input type="hidden" id="deleteTargetType" value="single">
+
+      <div class="flex justify-end gap-2">
+        <button type="button" id="btnCancelDeleteModal" class="neo-btn bg-gray-200 px-3.5 py-1.5 text-xs font-bold rounded">
+          Bekor qilish
+        </button>
+        <button type="button" id="btnConfirmDeleteAction" class="neo-btn bg-[#FB7185] text-black px-4 py-1.5 text-xs font-black rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-trash-can"></i>
+          <span>Ha, o'chirilsin</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       TOAST BILDIRISHNOMA (NOTIFICATION)
+       =================================================================== -->
+  <div id="toastNotification" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transform -translate-y-24 opacity-0 transition-all duration-300 pointer-events-none neo-box p-3 bg-white flex items-center gap-2.5 shadow-[4px_4px_0px_#000] max-w-[90vw]">
+    <div id="toastIcon" class="w-6 h-6 rounded border border-black flex items-center justify-center text-xs font-black bg-[#FFE600] flex-shrink-0">
+      ✓
+    </div>
+    <span id="toastMessage" class="text-xs font-black text-black truncate">
+      Amal bajarildi!
+    </span>
+  </div>
+
+  <!-- Asosiy JS ilovasi -->
+  <script src="app.js"></script>
+</body>
+</html>

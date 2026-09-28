@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Expense Tracker - Neo-brutalism Custom Styles & Micro-interactions
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg-main: #FAF8F5;
+  --neo-black: #121212;
+  --neo-yellow: #FFE600;
+  --neo-green: #34D399;
+  --neo-purple: #C084FC;
+  --neo-blue: #60A5FA;
+  --neo-pink: #F472B6;
+  --neo-coral: #FB7185;
+  --neo-orange: #FB923C;
+}
+
+* {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--neo-black);
+  background-image: radial-gradient(#d1cdc7 1px, transparent 1px);
+  background-size: 20px 20px;
+  min-height: 100vh;
+}
+
+/* Neo-brutalism Shadows & Borders */
+.neo-box {
+  background: #ffffff;
+  border: 3px solid var(--neo-black);
+  box-shadow: 5px 5px 0px 0px var(--neo-black);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neo-box-sm {
+  background: #ffffff;
+  border: 2px solid var(--neo-black);
+  box-shadow: 3px 3px 0px 0px var(--neo-black);
+}
+
+.neo-btn {
+  border: 2.5px solid var(--neo-black);
+  box-shadow: 3px 3px 0px 0px var(--neo-black);
+  font-weight: 700;
+  transition: all 0.12s ease-in-out;
+  cursor: pointer;
+  user-select: none;
+}
+
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px 0px var(--neo-black);
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px var(--neo-black);
+}
+
+.neo-btn-primary {
+  background-color: var(--neo-yellow);
+  color: var(--neo-black);
+}
+.neo-btn-primary:hover {
+  background-color: #ffd700;
+}
+
+.neo-btn-dark {
+  background-color: var(--neo-black);
+  color: #ffffff;
+}
+.neo-btn-dark:hover {
+  background-color: #262626;
+}
+
+.neo-btn-danger {
+  background-color: #FF6B6B;
+  color: var(--neo-black);
+}
+.neo-btn-danger:hover {
+  background-color: #ff5252;
+}
+
+/* Inputs & Selects */
+.neo-input {
+  border: 2.5px solid var(--neo-black);
+  background-color: #ffffff;
+  box-shadow: 3px 3px 0px 0px var(--neo-black);
+  transition: all 0.15s ease;
+  outline: none;
+  font-weight: 600;
+}
+
+.neo-input:focus {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px var(--neo-black);
+  background-color: #fffef2;
+}
+
+/* Modal styles */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+.modal-content {
+  animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* List item entry animation */
+.expense-item {
+  animation: slideIn 0.25s ease-out;
+  transition: all 0.15s ease;
+}
+
+.expense-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px 0px var(--neo-black);
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1ede5;
+  border-left: 2px solid var(--neo-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--neo-black);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333333;
+}
+
+/* Badge tags */
+.neo-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border: 1.5px solid var(--neo-black);
+  box-shadow: 2px 2px 0px 0px var(--neo-black);
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+}
+
+/* Custom Progress Bar stripes */
+.progress-stripes {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+}
+
+/* ==========================================================================
+   Mobile Bottom Navigation & Tab Views
+   ========================================================================== */
+.bottom-nav-bar {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+.nav-tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: #374151;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-tab-btn:hover {
+  color: #000000;
+  background-color: #f3f4f6;
+}
+
+.nav-tab-btn.active {
+  color: #000000;
+  background-color: #FFE600;
+  border-color: #000000;
+  box-shadow: 2px 2px 0px 0px #000000;
+  transform: translateY(-2px);
+  font-weight: 900;
+}
+
+/* Floating Center Add Button */
+.nav-fab-btn {
+  width: 3.25rem;
+  height: 3.25rem;
+  background-color: #FFE600;
+  border: 3px solid #000000;
+  box-shadow: 3px 3px 0px 0px #000000;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: #000000;
+  transform: translateY(-1rem);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.nav-fab-btn:hover {
+  transform: translateY(-1.15rem) scale(1.05);
+  box-shadow: 4px 4px 0px 0px #000000;
+  background-color: #ffd700;
+}
+
+.nav-fab-btn:active {
+  transform: translateY(-0.85rem) scale(0.96);
+  box-shadow: 1px 1px 0px 0px #000000;
+}
+
+/* Tab sahifalari almashishi */
+.tab-view {
+  animation: fadeInTab 0.2s ease-out;
+}
+
+@keyframes fadeInTab {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
